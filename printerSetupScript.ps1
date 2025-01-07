@@ -1,8 +1,20 @@
 $driverPath = ".\PrintDrivers\x64\Driver\CNLB0MA64.INF"
+$driverName = "Canon Generic Plus UFR II"
 
-# Set-ExecutionPolicy RemoteSigned -Force
+$op1_printers = @(	
+	[PSCustomObject]@{Name = 'Main Office Printer'; IP = '192.168.55.10'}
+	[PSCustomObject]@{Name = 'Sales Printer'; IP = '192.168.55.11'}
+	[PSCustomObject]@{Name = 'Upstairs Printer'; IP = '192.168.55.12'}
+)
+$op2_printers = @(	
+	[PSCustomObject]@{Name = 'Large Office Printer'; IP = '192.168.125.10'}
+	[PSCustomObject]@{Name = 'Small Office Printer'; IP = '192.168.125.11'}
+)
+$raleigh_printers = @(	
+	[PSCustomObject]@{Name = 'Raleigh Printer'; IP = '192.168.145.20'}
+)
 
-function Check-RunAsAdministrator() {
+function Check-RunAsAdministrator {
   #Get current user context
   $CurrentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
   
@@ -33,36 +45,18 @@ function Check-RunAsAdministrator() {
 
 function install_driver {
 	pnputil /add-driver $driverPath
-	Add-PrinterDriver -Name "Canon Generic Plus UFR II"
+	Add-PrinterDriver -Name $driverName
 }
 
-function install_op1 {
-	# Main
-	Add-PrinterPort -Name "192.168.55.10" -PrinterHostAddress 192.168.55.10
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "Main Office Printer" -PortName "192.168.55.10"
+function install_printer {
+	param (
+		[object] $MyObject
+	)
 
-	# Sales
-	Add-PrinterPort -Name "192.168.55.11" -PrinterHostAddress 192.168.55.11
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "Sales Printer" -PortName "192.168.55.11"
-
-	# Upstairs
-	Add-PrinterPort -Name "192.168.55.12" -PrinterHostAddress 192.168.55.12
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "Upstairs Printer" -PortName "192.168.55.12"
-}
-	
-function install_op2 {
-	# OP2 Large Office Printer
-	Add-PrinterPort -Name "192.168.125.10" -PrinterHostAddress 192.168.125.10
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "OP2 Large Office Printer" -PortName "192.168.125.10"
-
-	# Small Office Printer
-	Add-PrinterPort -Name "192.168.125.11" -PrinterHostAddress 192.168.125.11
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "OP2 Small Office Printer" -PortName "192.168.125.11"
-}
-
-function install_raleigh {
-	Add-PrinterPort -Name "192.168.145.20" -PrinterHostAddress 192.168.145.20
-	Add-Printer -DriverName "Canon Generic Plus UFR II" -Name "Raleigh Printer" -PortName "192.168.145.20"
+	foreach ($printer in $MyObject){
+		Add-PrinterPort -Name $printer.IP -PrinterHostAddress $printer.IP
+		Add-Printer -DriverName $driverName -Name $printer.Name -PortName $printer.IP
+	}
 }
 
 function clearSpooler {
@@ -92,28 +86,28 @@ Write-Host $response
 
 if ($response -eq 1) {
 	install_driver
-	install_op1
+	install_printer $op1_printers
 } elseif ($response -eq 2) {
 	install_driver
-	install_op2
+	install_printer $op2_printers
 } elseif ($response -eq 3) {
 	install_driver
-	install_raleigh
+	install_printer $raleigh_printers
 } elseif ($response -eq 4) {
 	install_driver
-	install_op1
-	install_op2
-	install_raleigh
+	install_printer $op1_printers
+	install_printer $op2_printers
+	install_printer $raleigh_printers
 } elseif ($response -eq 5) {
 	clearSpooler
 }
 
 
 
-
+# Prompt to Set-ExecutionPolicy Restricted
 $executionPrompt = Read-Host -Prompt "Set Execution Policy to Restricted? [Y/N]"
 
-if ($executionPrompt -eq "Y" -or $executionPrompt -eq "y") {
+if ($executionPrompt -eq "Y" -or $executionPrompt -eq "y" -or $executionPrompt -eq "") {
 	Set-ExecutionPolicy Restricted
 	Write-Host "Execution Policy is back to Restricted"
 } else {

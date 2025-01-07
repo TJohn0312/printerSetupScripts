@@ -6,4 +6,3 @@
 
 ## Improvements
 1. Check for new Driver updates automaically
-2. Refactor code to use Classes/Objects for printers, and pass a list of objects to an install function
