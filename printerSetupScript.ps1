@@ -61,7 +61,9 @@ function install_printer {
 
 function clearSpooler {
 	net stop spooler
-	Remove-Item %systemroot%\System32\spool\printers\*
+	Remove-Item -Path C:\Windows\System32\spool\PRINTERS\* -Force -Recurse
+
+	# Remove-Item %systemroot%\System32\spool\printers\*
 	net start spooler
 }
 
@@ -77,11 +79,8 @@ $prompt = @(
 	"Press 3 to install Raleigh Printer `n"
 	"Press 4 to install All `n"
 	"Press 5 to clear Print Spooler `n"
-) -join ' '
-
+)
 $response = Read-Host $prompt
-
-Write-Host $response
 
 
 if ($response -eq 1) {
