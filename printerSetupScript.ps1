@@ -1,4 +1,4 @@
-$driverPath = ".\PrintDrivers\x64\Driver\CNLB0MA64.INF"
+$driverPath = "E:\PrintDrivers\x64\Driver\CNLB0MA64.INF"
 $driverName = "Canon Generic Plus UFR II"
 
 $op1_printers = @(	
@@ -62,8 +62,6 @@ function install_printer {
 function clearSpooler {
 	net stop spooler
 	Remove-Item -Path C:\Windows\System32\spool\PRINTERS\* -Force -Recurse
-
-	# Remove-Item %systemroot%\System32\spool\printers\*
 	net start spooler
 }
 
@@ -99,6 +97,8 @@ if ($response -eq 1) {
 	install_printer $raleigh_printers
 } elseif ($response -eq 5) {
 	clearSpooler
+} else {
+	Write-Host "Invalid value, skipping printer installation"
 }
 
 
